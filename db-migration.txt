@@ -1,0 +1,42 @@
+-- Enable the uuid-ossp extension for generating UUIDs
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ======================================================
+-- Table for Download Service: DownloadTask
+-- ======================================================
+CREATE TABLE download_task (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    original_url TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    error_details JSONB 
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ======================================================
+-- Table for Metadata Service: ImageMetadata
+-- ======================================================
+CREATE TABLE image_metadata (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    download_task_id UUID NOT NULL,
+    format TEXT NOT NULL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'extracted',
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ======================================================
+-- Table for Storage and Get Image Services: PublicImage
+-- ======================================================
+CREATE TABLE public_image (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    image_metadata_id UUID,  -- foreign key to image_metadata table
+    image_path TEXT NOT NULL,
+    public_url TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'stored',
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_image_metadata
+        FOREIGN KEY (image_metadata_id) 
+        REFERENCES image_metadata(id)
+        ON DELETE SET NULL
+);

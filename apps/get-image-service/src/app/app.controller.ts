@@ -23,4 +23,9 @@ export class AppController {
     }
     return res.status(HttpStatus.NOT_FOUND).json({ message: 'Image not found' });
   }
+
+  @Get('health')
+  health() {
+    return { status: 'get-image service is running' };
+  }
 }

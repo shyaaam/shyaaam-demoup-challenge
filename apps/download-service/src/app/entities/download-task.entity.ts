@@ -16,4 +16,14 @@ export class DownloadTask {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  /**
+   * A JSONB column to store error details when a download task fails.
+   * It can include structured information such as error message, error code, and timestamp.
+   */
+  @Column({ type: 'jsonb', nullable: true })
+  errorDetails: any;
+
+  @Column({ name: 'image_metadata_id', type: 'uuid' })
+  imageMetaDataId: string;
 }

@@ -3,21 +3,19 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PublicImage } from './entities/public-image.entity';
-import { RedisModule } from '@scale-hoster/common';
-import { LoggerModule, PinoLogger } from 'nestjs-pino';
-import { databaseConfigFactory } from '@scale-hoster/common';
+import { DatabaseModule, RedisModule } from '@scale-hoster/common';
+import { ConfigModule } from '@nestjs/config';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
     RedisModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `${__dirname}/.env`,
+    }),
     LoggerModule.forRoot(),
-    TypeOrmModule.forRootAsync({
-      useFactory: async (logger: PinoLogger) => databaseConfigFactory(logger, __dirname),
-      inject: [PinoLogger],
-    }),
-    TypeOrmModule.forRoot({
-      autoLoadEntities: true,
-    }),
+    DatabaseModule,
     TypeOrmModule.forFeature([PublicImage]),
   ],
   controllers: [AppController],
