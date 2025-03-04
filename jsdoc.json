@@ -1,0 +1,18 @@
+{
+    "source": {
+      "include": ["apps", "common"],
+      "exclude": ["node_modules"],
+      "includePattern": ".+\\.ts$",
+      "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "opts": {
+      "destination": "./docs",
+      "recurse": true,
+      "template": "node_modules/jsdoc-template"
+    },
+    "plugins": ["plugins/markdown"],
+    "rules": {
+        "semi": "off"
+        }
+  }
+  
