@@ -36,7 +36,13 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/scale-hoster-e2e/**/*"]
+      "exclude": [
+        "apps/scale-hoster-e2e/**/*",
+        "apps/download-service-e2e/**/*",
+        "apps/metadata-service-e2e/**/*",
+        "apps/storage-service-e2e/**/*",
+        "apps/get-image-service-e2e/**/*"
+      ]
     }
   ]
 }

@@ -1,0 +1,57 @@
+services:
+  download-service:
+    build: 
+      context: .
+      dockerfile: apps/download-service/Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+      - redis
+
+  metadata-service:
+    build: 
+      context: .
+      dockerfile: apps/metadata-service/Dockerfile
+    ports:
+      - '3001:3000'
+    depends_on:
+      - postgres
+      - redis
+
+  storage-service:
+    build: 
+      context: .
+      dockerfile: apps/storage-service/Dockerfile
+    ports:
+      - '3002:3000'
+    depends_on:
+      - postgres
+      - redis
+
+  get-image-service:
+    build: 
+      context: .
+      dockerfile: apps/get-image-service/Dockerfile
+    ports:
+      - '3003:3000'
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: scale
+      POSTGRES_PASSWORD: scale
+    ports:
+      - '5432:5432'
+    volumes:
+      - scalehosterdb:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
+
+volumes:
+  scalehosterdb:

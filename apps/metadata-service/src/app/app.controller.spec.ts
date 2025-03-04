@@ -12,4 +12,9 @@ describe('AppController', () => {
     }).compile();
   });
 
+  describe('getData', () => {
+    it('should return "Hello API"', () => {
+      const appController = app.get<AppController>(AppController);
+    });
+  });
 });
