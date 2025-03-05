@@ -1,101 +1,56 @@
 # ScaleHoster
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+# Reasoning & Discussion for this project
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Service Boundaries
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/nest?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+- **We separated concerns into four microservices.**  
+  - **DownloadService:** Handles the customer request and initiates the asynchronous flow.  
+  - **MetadataService:** Solely responsible for image analysis.  
+  - **StorageService:** Focuses on persistence and public URL generation.  
+  - **GetImageService:** Provides a read API.  
+- **Benefit:** This separation promotes scalability and clear bounded contexts.
 
-## Run tasks
+## Entity Modelling
 
-To run the dev server for your app, use:
+- **Approach:**  
+  Each service uses its own PostgreSQL schema to avoid a monolithic data model.  
+- **Design:**  
+  The entities are kept simple and service-specific. For example, the download task and image metadata are managed separately, reducing coupling.
 
-```sh
-npx nx serve scale-hoster
-```
+## Domain Events
 
-To create a production bundle:
+- **Usage:**  
+  Used Redis events (e.g., `download_task_created`, `metadata_extracted`, `public_image_generated`) to decouple the asynchronous processing stages.  
+- **Benefit:**  
+  This design supports fault tolerance and horizontal scaling.
 
-```sh
-npx nx build scale-hoster
-```
+## Rejected Solutions
 
-To see all available targets to run for a project, run:
+- **Monolithic NestJS Application:**  
+  Avoided a single monolithic application with one database schema because it would hinder scalability and violate microservices principles.
+- **Synchronous Processing:**  
+  Synchronous processing was rejected to ensure customers can continue without waiting for image processing.
 
-```sh
-npx nx show project scale-hoster
-```
+## Scope for Improvement: Client Notification Strategies
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+- **Client Notification:**  
+  Currently, the client receives a task ID and must later obtain the public image details.  
+- **Potential Strategies:**  
+  - **Polling:**  
+    Clients periodically query a status endpoint (e.g., `GET /download-status/:taskId`) to retrieve the public image ID and URL once processing is complete.
+  - **Callbacks/Webhooks:**  
+    Clients can provide a callback URL during the request. Once processing completes, the system sends the public image details to this URL.
+  - **WebSockets/Event Streaming:**  
+    Clients subscribe to real-time events (using WebSockets) to be notified immediately when the public image is ready.
+- **Benefit:**  
+  Implementing these strategies would improve user experience by providing timely updates on processing status.
+- **Consideration:**  
+  These strategies are not part of the core architecture but represent valuable enhancements for future iterations.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Read Optimized Model
 
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/nest:app demo
-```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/node:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
-```
-
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/nest?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- **Plan for High-Read Performance:**  
+  For high-read performance, the GetImageService can later introduce caching (e.g., Redis), denormalized read models or even serving the public image URL via CDN.
+- **Layered Approach:**  
+  This infrastructure-based optimization would be layered over the entity modeling adjustments.
